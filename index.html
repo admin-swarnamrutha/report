@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Swarnamrutha - Swarna Bindu Immunization Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-forest: #1a3a2a;
+            --forest:      #1b4332;
+            --leaf:        #2d6a4f;
+            --mint:        #95d5b2;
+            --parchment:   #faf3e0;
+            --gold:        #c9943a;
+            --gold-light:  #e5ba73;
+            --saffron:     #f4a636;
+            --terracotta:  #8c4a32;
+            --cream:       #fdf8ee;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #b7e4c7 0%, #74c69d 50%, #40916c 100%);
+            min-height: 100dvh;
+        }
+        /* Subtle mandala watermark */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            opacity: 0.045;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='90' fill='none' stroke='%231b4332' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='70' fill='none' stroke='%231b4332' stroke-width='0.5'/%3E%3Cpath d='M100,10 C120,40 120,80 100,100 C80,80 80,40 100,10Z' fill='%231b4332'/%3E%3Cpath d='M100,190 C80,160 80,120 100,100 C120,120 120,160 100,190Z' fill='%231b4332'/%3E%3Cpath d='M10,100 C40,80 80,80 100,100 C80,120 40,120 10,100Z' fill='%231b4332'/%3E%3Cpath d='M190,100 C160,120 120,120 100,100 C120,80 160,80 190,100Z' fill='%231b4332'/%3E%3Cpath d='M29,29 C55,45 70,70 100,100 C70,70 45,55 29,29Z' fill='%231b4332'/%3E%3Cpath d='M171,29 C145,55 130,70 100,100 C130,70 155,45 171,29Z' fill='%231b4332'/%3E%3Cpath d='M29,171 C55,155 70,130 100,100 C70,130 45,145 29,171Z' fill='%231b4332'/%3E%3Cpath d='M171,171 C145,145 130,130 100,100 C130,130 155,145 171,171Z' fill='%231b4332'/%3E%3Ccircle cx='100' cy='100' r='8' fill='%231b4332'/%3E%3C/svg%3E");
+            background-size: 120px 120px;
+        }
+
+        .ayur-title  { font-family: 'Cinzel', serif; }
+        .ayur-sub    { font-family: 'Playfair Display', serif; }
+
+        /* Gold divider line */
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+        }
+
+        /* Card with parchment feel */
+        .parchment-card {
+            background: linear-gradient(135deg, #fffdf5 0%, #faf3e0 60%, #f5ead0 100%);
+            border: 1px solid rgba(201,148,58,0.25);
+            box-shadow: 0 2px 8px rgba(27,67,50,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
+        }
+
+        /* Profile field */
+        .profile-field {
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(201,148,58,0.18);
+            border-radius: 8px;
+            padding: 5px 8px;
+        }
+        .profile-field .label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #7a6640;
+            font-weight: 600;
+        }
+        .profile-field .value {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #1a3a2a;
+            line-height: 1.3;
+        }
+
+        /* Scrollbar */
+        .scroll-thin::-webkit-scrollbar { width: 3px; }
+        .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+        .scroll-thin::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+        /* Table rows */
+        tbody tr:nth-child(even) { background: rgba(149,213,178,0.12); }
+        tbody tr:hover            { background: rgba(149,213,178,0.28); }
+
+        /* Benefit card */
+        .benefit-card {
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(201,148,58,0.2);
+            border-radius: 10px;
+            padding: 6px 4px;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Input glow */
+        #childIdInput:focus {
+            box-shadow: 0 0 0 3px rgba(201,148,58,0.25);
+            border-color: var(--gold);
+        }
+
+        /* Search button shimmer */
+        .search-btn {
+            background: linear-gradient(135deg, #1b4332, #2d6a4f);
+            box-shadow: 0 3px 10px rgba(27,67,50,0.4);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .search-btn:active { transform: scale(0.94); box-shadow: 0 1px 4px rgba(27,67,50,0.3); }
+
+        /* Header gradient */
+        .header-bg {
+            background: linear-gradient(160deg, #0d2b1d 0%, #1b4332 55%, #2d6a4f 100%);
+        }
+
+        /* Footer gradient */
+        .footer-bg {
+            background: linear-gradient(160deg, #0d2b1d 0%, #1b4332 100%);
+        }
+
+        /* Section badge */
+        .section-badge {
+            background: linear-gradient(90deg, var(--terracotta), #a0522d);
+            color: white;
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen flex flex-col justify-center items-center p-0 sm:p-3">
+
+    <div class="w-full max-w-md bg-[var(--cream)] shadow-2xl h-full flex flex-col border-x-4 border-[var(--forest)] relative overflow-hidden rounded-none sm:rounded-2xl">
+
+        <!-- ══ HEADER ══════════════════════════════════════════════════════ -->
+        <header class="header-bg flex-none z-40 shadow-lg">
+            <!-- Top gold line -->
+            <div class="gold-divider"></div>
+            <div class="flex items-center justify-between gap-2 px-3 py-2">
+                <div class="w-12 h-12 bg-white/90 p-1 rounded-xl flex items-center justify-center shadow-inner border border-white/50">
+                    <img src="logo.png" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div class="text-center flex-1 mx-1">
+                    <h1 class="ayur-title text-base sm:text-lg font-extrabold tracking-widest text-white leading-none">SWARNAMRUTHA</h1>
+                    <div class="gold-divider my-1 mx-4"></div>
+                    <p class="ayur-sub text-[9px] sm:text-[9.5px] italic text-[var(--gold-light)] font-semibold leading-tight">Ayurvedic Swarna Bindu Prashana<br>Immunization Program</p>
+                </div>
+                <div class="w-12 h-12 rounded-full border-2 border-[var(--gold)] overflow-hidden bg-white/10 flex items-center justify-center shadow-md">
+                    <img src="doctor.png" alt="Doctor" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <div class="gold-divider"></div>
+        </header>
+
+        <!-- ══ MAIN ════════════════════════════════════════════════════════ -->
+        <main class="flex-1 p-3 space-y-3 overflow-y-auto scroll-thin flex flex-col min-h-0">
+
+            <!-- Search Section -->
+            <section class="parchment-card p-3 rounded-xl flex-none">
+                <h3 class="ayur-sub text-xs font-bold text-[var(--forest)] mb-2 flex items-center gap-1.5">
+                    <span class="text-sm">🌿</span> Immunization Report
+                </h3>
+                <div class="flex gap-2">
+                    <input type="text" id="childIdInput"
+                        placeholder="Search by email ID or Child Id"
+                        class="flex-1 min-w-0 px-3 py-2 text-xs rounded-xl border border-[rgba(201,148,58,0.35)] text-center font-semibold bg-white/80 transition-all duration-200"
+                        style="font-family:'Poppins',sans-serif">
+                    <button onclick="fetchChildData(null)" class="search-btn text-white w-10 h-10 flex items-center justify-center rounded-xl flex-none text-base">🔍</button>
+                </div>
+                <p id="searchError" class="text-red-700 text-[10px] mt-2 text-center hidden font-semibold bg-red-50 py-1.5 px-2 rounded-lg border border-red-200"></p>
+            </section>
+
+            <!-- Dynamic Data -->
+            <div id="dynamicDataWrapper" class="hidden space-y-3 flex-none">
+
+                <!-- Child Profile Card -->
+                <section class="parchment-card rounded-xl relative pt-4 pb-3 px-3">
+                    <div class="absolute -top-2.5 left-3">
+                        <span class="section-badge">🧒 Child Profile</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="profile-field">
+                            <div class="label">✨ Child Name</div>
+                            <div id="lblChildName" class="value">--</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="label"><svg style="display:inline;vertical-align:-2px;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7a6640" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg> Child ID</div>
+                            <div id="lblChildID" class="value" style="font-size:10.5px; letter-spacing:0.03em;">--</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="label">📅 Date of Birth</div>
+                            <div id="lblDob" class="value">--</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="label">🧔 Father's Name</div>
+                            <div id="lblFather" class="value">--</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="label">📍 Registered Camp</div>
+                            <div id="lblLocation" class="value">--</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="label">📞 Phone</div>
+                            <div id="lblPhone" class="value">--</div>
+                        </div>
+                        <div class="profile-field col-span-2">
+                            <div class="label">✉️ Email</div>
+                            <div id="lblEmail" class="value break-all" style="font-size:10px;">--</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Logs Table -->
+                <section class="rounded-xl overflow-hidden border border-[rgba(27,67,50,0.15)] shadow-sm">
+                    <div class="flex justify-between items-center px-3 py-1.5" style="background:linear-gradient(90deg,#1a3a2a,#2d6a4f);">
+                        <h3 class="ayur-title text-[10px] font-bold tracking-widest text-[var(--gold-light)] flex items-center gap-1.5">
+                            <span>📊</span> Immunization Logs
+                        </h3>
+                        <div class="flex items-center gap-1 text-[9px]">
+                            <span class="text-[var(--mint)]">Sort:</span>
+                            <select id="sortOrder" onchange="renderTable()"
+                                class="rounded px-1 py-0.5 border text-[9px] font-semibold focus:outline-none"
+                                style="background:#1a3a2a;color:var(--gold-light);border-color:rgba(201,148,58,0.4)">
+                                <option value="desc">Latest First</option>
+                                <option value="asc">Oldest First</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="gold-divider"></div>
+                    <div class="max-h-36 overflow-y-auto scroll-thin">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 z-10" style="background:linear-gradient(90deg,#f5ead0,#faf3e0);">
+                                <tr>
+                                    <th class="p-2 text-[9px] font-bold text-[var(--forest)] uppercase tracking-wide">📅 Date</th>
+                                    <th class="p-2 text-[9px] font-bold text-[var(--forest)] uppercase tracking-wide text-center">📏 Height</th>
+                                    <th class="p-2 text-[9px] font-bold text-[var(--forest)] uppercase tracking-wide text-center">⚖️ Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody" class="divide-y divide-[rgba(201,148,58,0.12)] text-gray-700 text-xs"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Benefits Section -->
+            <section class="flex-1 space-y-2.5 parchment-card rounded-xl p-3">
+                <div>
+                    <h3 class="ayur-title text-[11px] font-extrabold text-center tracking-widest mb-0.5 text-[var(--forest)]">
+                        ✨ SWARNA BINDU PRASHANA ✨
+                    </h3>
+                    <p class="ayur-sub text-[9px] text-center text-[var(--gold)] italic mb-2">Ancient Ayurvedic Immunization Wisdom</p>
+                    <div class="gold-divider mb-2"></div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <div class="benefit-card"><div class="text-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 6v5c0 5 3.5 9 8 11 4.5-2 8-6 8-11V6L12 2z" fill="#c9943a" opacity="0.85"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><b class="block text-[var(--forest)] text-[8.5px] mt-0.5 leading-tight">Boosts<br>Immunity</b></div>
+                        <div class="benefit-card"><div class="text-lg">🧠</div><b class="block text-[var(--forest)] text-[8.5px] mt-0.5 leading-tight">Enhances<br>Memory</b></div>
+                        <div class="benefit-card"><div class="text-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c0 4-3 6-3 9a3 3 0 006 0c0-3-3-5-3-9z" fill="#f4a636" opacity="0.9"/><path d="M9 13c0 2 1 3.5 3 4 2-.5 3-2 3-4" fill="#c9943a" opacity="0.7"/><path d="M10 21h4" stroke="#1b4332" stroke-width="1.8" stroke-linecap="round"/></svg></div><b class="block text-[var(--forest)] text-[8.5px] mt-0.5 leading-tight">Improves<br>Digestion</b></div>
+                        <div class="benefit-card"><div class="text-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="4.5" r="1.8" fill="#c9943a"/><path d="M12 7c-1.5 1.8-3.5 2.8-5.5 2.8.8 2.8 2.8 4.8 5.5 5.7 2.7-.9 4.7-2.9 5.5-5.7C15.5 9.8 13.5 8.8 12 7z" fill="#f4a636" opacity="0.9"/><path d="M6.5 9.8C4.5 9.5 2.5 10.2 2 12c1.8 1 3.8 1 5.5.2" stroke="#2d6a4f" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M17.5 9.8C19.5 9.5 21.5 10.2 22 12c-1.8 1-3.8 1-5.5.2" stroke="#2d6a4f" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M9.5 20h5" stroke="#1b4332" stroke-width="1.8" stroke-linecap="round"/><path d="M12 15.5v4.5" stroke="#1b4332" stroke-width="1.4" stroke-linecap="round"/></svg></div><b class="block text-[var(--forest)] text-[8.5px] mt-0.5 leading-tight">Calms<br>the Mind</b></div>
+                        <div class="benefit-card"><div class="text-lg">👁️</div><b class="block text-[var(--forest)] text-[8.5px] mt-0.5 leading-tight">Vision &<br>Hearing</b></div>
+                        <div class="benefit-card"><div class="text-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12c0-2 1.5-3.5 3-3 .5-1.5 2-2.5 3.5-2 .5-1 1.5-1.5 2.5-1 1.5-1 3-.5 3.5 1C18 7.5 19 9.5 18 11l-1 1-2-1-1 2H9l-1-2-2 1z" fill="#c9943a" opacity="0.9"/><path d="M9 13h6l1 3H8l1-3z" fill="#1b4332" opacity="0.8"/><path d="M10 16v2h4v-2" stroke="#1b4332" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg></div><b class="block text-[var(--forest)] text-[8.5px] mt-0.5 leading-tight">Overall<br>Strength</b></div>
+                    </div>
+                </div>
+                <div class="gold-divider"></div>
+                <div class="flex items-start gap-2.5 bg-[rgba(244,166,54,0.12)] border border-[rgba(201,148,58,0.3)] p-2 rounded-xl">
+                    <span class="text-lg flex-none mt-0.5">📢</span>
+                    <p class="text-[9px] font-medium text-[#5a3a00] leading-relaxed">
+                        Only <strong class="text-[var(--terracotta)] underline underline-offset-2 decoration-[var(--saffron)]">Regular Monthly Doses</strong> ensure optimal developmental milestones for your child.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <!-- ══ FOOTER ═══════════════════════════════════════════════════════ -->
+        <footer class="footer-bg flex-none w-full z-40">
+            <div class="gold-divider"></div>
+            <div class="px-3 py-2 text-center space-y-0.5">
+                <p class="text-[11px] font-semibold text-white tracking-wide">
+                    📞 Helpline: <span class="text-[var(--gold-light)] font-extrabold">8088800548</span>
+                </p>
+                <p class="text-[9.5px] text-[var(--mint)]">
+                    ✉️ <a href="mailto:admin.swarnamrutha@gmail.com" class="underline hover:text-white transition-colors">admin@swarnamrutha.com</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══ MODAL ════════════════════════════════════════════════════════════ -->
+    <div id="childSelectModal" class="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border-2 border-[var(--gold)]" style="background:var(--cream)">
+            <div class="header-bg p-3 text-center">
+                <div class="gold-divider mb-2"></div>
+                <h4 class="ayur-title text-sm font-bold tracking-widest text-white">🧒 Multiple Profiles Found</h4>
+                <p class="text-[10px] text-[var(--mint)] mt-0.5">Select your child to continue</p>
+                <div class="gold-divider mt-2"></div>
+            </div>
+            <div id="modalListContainer" class="p-3 max-h-48 overflow-y-auto scroll-thin space-y-2 bg-white"></div>
+            <div class="p-2.5 flex gap-2 justify-end" style="background:var(--parchment);border-top:1px solid rgba(201,148,58,0.2)">
+                <button onclick="closeModal()" class="px-3 py-1.5 text-[11px] font-medium text-gray-500 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
+                <button onclick="confirmModalSelection()" class="px-4 py-1.5 text-[11px] font-bold text-white rounded-lg shadow" style="background:linear-gradient(135deg,#1b4332,#2d6a4f)">
+                    Fetch Details →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxLJ1nT9TzjKhV6YdBUT4JGJho83u6iWF-MwBst52rR6DeYgL5whY9o_tJKFZlbP_Hz/exec";
+        let currentLogs = [];
+
+        async function fetchChildData(confirmedChildID) {
+            const errorEl     = document.getElementById('searchError');
+            const dataWrapper = document.getElementById('dynamicDataWrapper');
+
+            let targetUrl;
+            if (confirmedChildID) {
+                // Modal path → Scenario A in Apps Script (?childID=)
+                targetUrl = WEB_APP_URL + "?childID=" + encodeURIComponent(confirmedChildID);
+            } else {
+                const searchValue = document.getElementById('childIdInput').value.trim();
+                if (!searchValue) {
+                    showError("⚠️ Please enter a valid Child ID or registered Email Address.");
+                    dataWrapper.classList.add('hidden');
+                    return;
+                }
+                // Search box path → Scenario B (?searchQuery=)
+                targetUrl = WEB_APP_URL + "?searchQuery=" + encodeURIComponent(searchValue);
+            }
+
+            showError("⏳ Querying records...", false);
+
+            try {
+                const response = await fetch(targetUrl);
+                const data     = await response.json();
+
+                if (data.status === "error") {
+                    showError("❌ " + data.message);
+                    dataWrapper.classList.add('hidden');
+                    return;
+                }
+
+                if (data.status === "multiple") {
+                    errorEl.classList.add('hidden');
+                    openSelectionModal(data.profiles);
+                    return;
+                }
+
+                // ── Success ──────────────────────────────────────────────
+                errorEl.classList.add('hidden');
+                closeModal();
+
+                const c = data.child;
+                document.getElementById('lblChildName').innerText = c.childName  || '--';
+                document.getElementById('lblChildID').innerText   = c.childID    || '--';
+                document.getElementById('lblDob').innerText       = c.childDOB   ? formatDisplayDate(c.childDOB) : '--';
+                document.getElementById('lblFather').innerText    = c.fathersName || '--';
+                document.getElementById('lblLocation').innerText  = c.locationName || '--';
+                document.getElementById('lblPhone').innerText     = c.phoneNumber  || '--';
+                document.getElementById('lblEmail').innerText     = c.emailId      || '--';
+
+                currentLogs = data.logs || [];
+                renderTable();
+                dataWrapper.classList.remove('hidden');
+
+            } catch (err) {
+                showError("❌ Connection Error: " + err.message);
+                dataWrapper.classList.add('hidden');
+            }
+        }
+
+        function showError(msg, isError = true) {
+            const el = document.getElementById('searchError');
+            el.innerText = msg;
+            el.classList.remove('hidden');
+            el.style.color = isError ? '#b91c1c' : '#1b4332';
+            el.style.background = isError ? '#fef2f2' : '#f0fdf4';
+            el.style.borderColor = isError ? '#fca5a5' : '#bbf7d0';
+        }
+
+        function openSelectionModal(profiles) {
+            const container = document.getElementById('modalListContainer');
+            container.innerHTML = '';
+            profiles.forEach((profile, index) => {
+                const item = document.createElement('label');
+                item.className = "flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer w-full transition-colors";
+                item.style.cssText = "border-color:rgba(201,148,58,0.25);background:rgba(250,243,224,0.5)";
+                item.innerHTML = `
+                    <input type="radio" name="modalChildRadio" value="${profile.childID}"
+                        ${index === 0 ? 'checked' : ''}
+                        class="w-4 h-4 accent-[#1b4332]">
+                    <div class="text-xs leading-tight">
+                        <b class="text-gray-900 block text-sm">${profile.childName}</b>
+                        <span class="text-gray-400 text-[10px]">ID: ${profile.childID}</span>
+                    </div>`;
+                container.appendChild(item);
+            });
+            document.getElementById('childSelectModal').classList.remove('hidden');
+        }
+
+        function confirmModalSelection() {
+            const selected = document.querySelector('input[name="modalChildRadio"]:checked');
+            if (selected) fetchChildData(selected.value);
+        }
+
+        function closeModal() {
+            document.getElementById('childSelectModal').classList.add('hidden');
+        }
+
+        function renderTable() {
+            const tbody     = document.getElementById('logsTableBody');
+            const sortOrder = document.getElementById('sortOrder').value;
+            tbody.innerHTML = '';
+
+            if (!currentLogs.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400 italic text-xs">No immunization records found.</td></tr>`;
+                return;
+            }
+
+            const sorted = [...currentLogs].sort((a, b) => {
+                const da = new Date(a.datetime || a.date);
+                const db = new Date(b.datetime || b.date);
+                return sortOrder === 'desc' ? db - da : da - db;
+            });
+
+            sorted.forEach(log => {
+                const row = document.createElement('tr');
+                const { date: dateStr, time: timeStr } = formatLogDate(log.datetime || log.date);
+                row.innerHTML = `
+                    <td class="p-2 text-[11px]">
+                        <span class="font-bold text-[#1a3a2a]">${dateStr}</span>
+                        ${timeStr ? `<span class="font-light text-gray-400 text-[9px] ml-1">${timeStr}</span>` : ''}
+                    </td>
+                    <td class="p-2 text-center font-bold text-[11px] text-gray-800">${log.Height ? log.Height + ' cm' : '–'}</td>
+                    <td class="p-2 text-center font-bold text-[11px] text-[var(--terracotta)]">${log.Weight ? log.Weight + ' kg' : '–'}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Format: "22 Jun 26" + "14:35"
+        function formatLogDate(dtStr) {
+            const d = new Date(dtStr);
+            if (isNaN(d)) return { date: dtStr, time: '' };
+            const day  = d.getDate().toString().padStart(2, '0');
+            const mon  = d.toLocaleString('en-US', { month: 'short' });
+            const yr   = d.getFullYear().toString().slice(-2);
+            const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+            return { date: `${day} ${mon} ${yr}`, time };
+        }
+
+        // Format full DOB: "22 Jun 2026"
+        function formatDisplayDate(dtStr) {
+            const d = new Date(dtStr);
+            if (isNaN(d)) return dtStr;
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+    </script>
+</body>
+</html>
