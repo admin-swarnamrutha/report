@@ -163,7 +163,7 @@
                 </h3>
                 <div class="flex gap-2">
                     <input type="text" id="childIdInput"
-                        placeholder="Search by email ID or Child Id"
+                        placeholder="Search by Phone Number/Email/Child ID"
                         class="flex-1 min-w-0 px-3 py-2 text-xs rounded-xl border border-[rgba(201,148,58,0.35)] text-center font-semibold bg-white/80 transition-all duration-200"
                         style="font-family:'Poppins',sans-serif">
                     <button onclick="fetchChildData(null)" class="search-btn text-white w-10 h-10 flex items-center justify-center rounded-xl flex-none text-base">🔍</button>
@@ -304,7 +304,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxLJ1nT9TzjKhV6YdBUT4JGJho83u6iWF-MwBst52rR6DeYgL5whY9o_tJKFZlbP_Hz/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzlHGHgs6PWhG3QV8sNtZGcrMtgT0GUEZCd-0w_j5QpTOgpAtIy-TzJnAq8D18Edhcw/exec";
         let currentLogs = [];
 
         async function fetchChildData(confirmedChildID) {
@@ -318,7 +318,7 @@
             } else {
                 const searchValue = document.getElementById('childIdInput').value.trim();
                 if (!searchValue) {
-                    showError("⚠️ Please enter a valid Child ID or registered Email Address.");
+                    showError("⚠️ Please enter a valid Child ID, Email Address or Phone Number.");
                     dataWrapper.classList.add('hidden');
                     return;
                 }
