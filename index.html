@@ -465,15 +465,54 @@
         }
 
         // Helper: load an img element to base64 for jsPDF
+        // Returns { b64, aspect, circleb64 }
+        // b64        = full image base64 (for logo, object-contain)
+        // circleb64  = pre-cropped circular image (for doctor, object-cover)
         function imgToBase64(imgEl) {
             try {
-                const canvas = document.createElement('canvas');
-                canvas.width  = imgEl.naturalWidth  || imgEl.width  || 80;
-                canvas.height = imgEl.naturalHeight || imgEl.height || 80;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
-                return canvas.toDataURL('image/png');
+                const nw = imgEl.naturalWidth  || imgEl.width  || 80;
+                const nh = imgEl.naturalHeight || imgEl.height || 80;
+                const aspect = nw / nh;
+
+                // Full image canvas
+                const c1 = document.createElement('canvas');
+                c1.width = nw; c1.height = nh;
+                c1.getContext('2d').drawImage(imgEl, 0, 0, nw, nh);
+                const b64 = c1.toDataURL('image/png');
+
+                // Circular crop canvas (object-cover into a square)
+                const SZ = 300;
+                const c2 = document.createElement('canvas');
+                c2.width = c2.height = SZ;
+                const ctx2 = c2.getContext('2d');
+                ctx2.beginPath();
+                ctx2.arc(SZ/2, SZ/2, SZ/2, 0, Math.PI * 2);
+                ctx2.closePath();
+                ctx2.clip();
+                // object-cover: scale shortest side to SZ
+                let sw, sh, sx, sy;
+                if (aspect >= 1) { sh = SZ; sw = SZ * aspect; sx = -(sw - SZ) / 2; sy = 0; }
+                else             { sw = SZ; sh = SZ / aspect; sx = 0; sy = -(sh - SZ) / 2; }
+                ctx2.drawImage(imgEl, sx, sy, sw, sh);
+                const circleb64 = c2.toDataURL('image/png');
+
+                return { b64, aspect, circleb64 };
             } catch(e) { return null; }
+        }
+
+        // Draw a rounded rectangle path (for logo white bg)
+        function pdfRoundedRect(doc, x, y, w, h, r) {
+            const k = 0.552284;
+            doc.lines([
+                [w - 2*r, 0],
+                [r*k, 0, r, r*(1-k), r, r],
+                [0, h - 2*r],
+                [0, r*k, -(r*(1-k)), r, -r, r],
+                [-(w - 2*r), 0],
+                [-r*k, 0, -r, -(r*(1-k)), -r, -r],
+                [0, -(h - 2*r)],
+                [0, -r*k, r*(1-k), -r, r, -r]
+            ], x + r, y, [1, 1], '', true);
         }
 
         function downloadPDF() {
@@ -516,13 +555,39 @@
                 doc.rect(0, 0,  W, 1.5, 'F');
                 doc.rect(0, 31, W, 1.2, 'F');
 
-                // Logo left
+                // ── Logo: white rounded-rect bg, aspect-ratio locked, object-contain ──
+                const logoSize = 20; // container size mm (square, like w-12 h-12)
+                const logoPad  = 1.5;
+                // White rounded background
+                doc.setFillColor(255, 255, 255);
+                pdfRoundedRect(doc, 8, 4, logoSize, logoSize, 2);
+                doc.fill();
+                // Draw image centred inside, preserving aspect ratio
                 if (logoB64) {
-                    doc.addImage(logoB64, 'PNG', 8, 4, 18, 18);
+                    const asp  = logoB64.aspect;
+                    const inner = logoSize - logoPad * 2;
+                    let lw, lh;
+                    if (asp >= 1) { lw = inner; lh = inner / asp; }
+                    else          { lh = inner; lw = inner * asp; }
+                    const lx = 8 + logoPad + (inner - lw) / 2;
+                    const ly = 4 + logoPad + (inner - lh) / 2;
+                    doc.addImage(logoB64.b64, 'PNG', lx, ly, lw, lh);
                 }
-                // Doctor image right (circular clip approximation — just place it)
+
+                // ── Doctor: pre-cropped circle, object-cover, gold border ──
+                const docSize = 20;
+                const docX    = W - 8 - docSize;
+                const docY    = 4;
+                const docR    = docSize / 2;
+                const docCx   = docX + docR;
+                const docCy   = docY + docR;
                 if (doctorB64) {
-                    doc.addImage(doctorB64, 'PNG', W - 26, 4, 18, 18);
+                    // circleb64 is already cropped to a circle via canvas
+                    doc.addImage(doctorB64.circleb64, 'PNG', docX, docY, docSize, docSize);
+                    // Gold border ellipse on top
+                    doc.setDrawColor(201, 148, 58);
+                    doc.setLineWidth(0.8);
+                    doc.ellipse(docCx, docCy, docR, docR, 'S');
                 }
 
                 // Title — centred between images
