@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Swarnamrutha - Swarna Bindu Immunization Portal</title>
+    <title>Swarnamrutha - Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -241,6 +243,15 @@
                         </table>
                     </div>
                 </section>
+
+                <!-- Download PDF Button -->
+                <button onclick="downloadPDF()" class="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl transition-all active:scale-95" style="background:linear-gradient(135deg,#8c4a32 0%,#7a3728 100%);color:white;border:none;box-shadow:0 4px 16px rgba(140,74,50,0.4);font-family:'Cinzel',serif;font-size:11.5px;font-weight:700;letter-spacing:0.12em;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.9">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download PDF Report
+                </button>
+
             </div>
 
             <!-- Benefits Section -->
@@ -452,6 +463,308 @@
             if (isNaN(d)) return dtStr;
             return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
         }
+
+        // Helper: load an img element to base64 for jsPDF
+        function imgToBase64(imgEl) {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width  = imgEl.naturalWidth  || imgEl.width  || 80;
+                canvas.height = imgEl.naturalHeight || imgEl.height || 80;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/png');
+            } catch(e) { return null; }
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const W = doc.internal.pageSize.getWidth();
+            const H = doc.internal.pageSize.getHeight();
+
+            // ── Colours ───────────────────────────────────────────────────
+            const forest     = [27,  67,  50];
+            const gold       = [201, 148, 58];
+            const terracotta = [140, 74,  50];
+            const parchment  = [250, 243, 224];
+            const darkText   = [26,  58,  42];
+            const mutedGold  = [122, 102, 64];
+
+            // ── IST timestamp ─────────────────────────────────────────────
+            const now    = new Date();
+            const istOff = 5.5 * 60 * 60000;
+            const ist    = new Date(now.getTime() + istOff);
+            const dd  = ist.getUTCDate().toString().padStart(2,'0');
+            const mo  = ist.toLocaleString('en-US',{month:'short',timeZone:'UTC'});
+            const yy  = ist.getUTCFullYear();
+            const hh  = ist.getUTCHours().toString().padStart(2,'0');
+            const mm  = ist.getUTCMinutes().toString().padStart(2,'0');
+            const istStr = `${dd} ${mo} ${yy}  ${hh}:${mm} IST`;
+
+            // ── Grab header images ─────────────────────────────────────────
+            const logoEl   = document.querySelector('header img[alt="Logo"]');
+            const doctorEl = document.querySelector('header img[alt="Doctor"]');
+            const logoB64   = logoEl   ? imgToBase64(logoEl)   : null;
+            const doctorB64 = doctorEl ? imgToBase64(doctorEl) : null;
+
+            // ── drawPageChrome: header + footer on every page ─────────────
+            function drawPageChrome() {
+                // Header banner
+                doc.setFillColor(...forest);
+                doc.rect(0, 0, W, 32, 'F');
+                doc.setFillColor(...gold);
+                doc.rect(0, 0,  W, 1.5, 'F');
+                doc.rect(0, 31, W, 1.2, 'F');
+
+                // Logo left
+                if (logoB64) {
+                    doc.addImage(logoB64, 'PNG', 8, 4, 18, 18);
+                }
+                // Doctor image right (circular clip approximation — just place it)
+                if (doctorB64) {
+                    doc.addImage(doctorB64, 'PNG', W - 26, 4, 18, 18);
+                }
+
+                // Title — centred between images
+                doc.setFont('times', 'bold');
+                doc.setFontSize(20);
+                doc.setTextColor(255, 255, 255);
+                doc.text('SWARNAMRUTHA', W / 2, 14, { align: 'center' });
+
+                // Subtitle
+                doc.setFont('times', 'italic');
+                doc.setFontSize(8);
+                doc.setTextColor(...gold);
+                doc.text('Ayurvedic Swarna Bindu Prashana Immunization Program', W / 2, 20.5, { align: 'center' });
+
+                // Gold thin line below subtitle
+                doc.setDrawColor(...gold);
+                doc.setLineWidth(0.4);
+                doc.line(30, 24, W - 30, 24);
+
+                // Footer
+                doc.setFillColor(...forest);
+                doc.rect(0, H - 16, W, 16, 'F');
+                doc.setFillColor(...gold);
+                doc.rect(0, H - 16, W, 1, 'F');
+
+                // Footer content
+                doc.setFont('times', 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(255, 255, 255);
+                doc.text('Contact : 8088800548', W / 2, H - 9.5, { align: 'center' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(...gold);
+                doc.text('Mail to : admin.swarnamrutha@gmail.com', W / 2, H - 4.5, { align: 'center' });
+            }
+
+            // Draw chrome on page 1
+            drawPageChrome();
+
+            // ── Parchment report-title band ───────────────────────────────
+            doc.setFillColor(...parchment);
+            doc.rect(0, 32, W, 13, 'F');
+            doc.setFont('times', 'bold');
+            doc.setFontSize(13);
+            doc.setTextColor(...terracotta);
+            doc.text('IMMUNIZATION REPORT', W / 2, 41, { align: 'center' });
+
+            let y = 51;
+
+            // ── Child Profile header row ──────────────────────────────────
+            doc.setFillColor(...terracotta);
+            doc.roundedRect(10, y - 5, 52, 7, 1.5, 1.5, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(255, 255, 255);
+            doc.text('CHILD PROFILE', 14, y - 0.2);
+
+            // Downloaded-on timestamp right-aligned
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(...mutedGold);
+            doc.text('Downloaded: ' + istStr, W - 11, y - 0.2, { align: 'right' });
+
+            y += 4;
+
+            // ── Profile fields — clean flat rows ──────────────────────────
+            const fields = [
+                ['CHILD NAME',      document.getElementById('lblChildName').innerText],
+                ['CHILD ID',        document.getElementById('lblChildID').innerText],
+                ['DATE OF BIRTH',   document.getElementById('lblDob').innerText],
+                ["FATHER'S NAME",   document.getElementById('lblFather').innerText],
+                ['REGISTERED CAMP', document.getElementById('lblLocation').innerText],
+                ['PHONE',           document.getElementById('lblPhone').innerText],
+                ['EMAIL',           document.getElementById('lblEmail').innerText],
+            ];
+
+            const colX = [10, W / 2 + 3];
+            const colW = W / 2 - 13;
+            const rowH = 11;
+
+            const twoColFields = fields.slice(0, 6);
+            const fullFields   = fields.slice(6);
+
+            // Thin gold line above fields
+            doc.setDrawColor(...gold);
+            doc.setLineWidth(0.4);
+            doc.line(10, y + 1, W - 10, y + 1);
+            y += 3;
+
+            twoColFields.forEach((field, i) => {
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const x   = colX[col];
+                const fy  = y + row * rowH;
+
+                // Label
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(6.5);
+                doc.setTextColor(...mutedGold);
+                doc.text(field[0], x, fy + 3.5);
+
+                // Value
+                doc.setFont('times', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(...darkText);
+                doc.text(String(field[1]), x, fy + 8.5, { maxWidth: colW - 2 });
+
+                // Separator line after each full row
+                if (col === 1 || i === twoColFields.length - 1) {
+                    doc.setDrawColor(220, 210, 190);
+                    doc.setLineWidth(0.2);
+                    doc.line(10, fy + rowH, W - 10, fy + rowH);
+                }
+            });
+
+            y += Math.ceil(twoColFields.length / 2) * rowH + 2;
+
+            // Full-width fields (email)
+            fullFields.forEach((field) => {
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(6.5);
+                doc.setTextColor(...mutedGold);
+                doc.text(field[0], 10, y + 3.5);
+
+                doc.setFont('times', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(...darkText);
+                doc.text(String(field[1]), 10, y + 8.5, { maxWidth: W - 22 });
+
+                doc.setDrawColor(220, 210, 190);
+                doc.setLineWidth(0.2);
+                doc.line(10, y + rowH, W - 10, y + rowH);
+
+                y += rowH;
+            });
+
+            y += 6;
+
+            // ── Gold divider before logs ──────────────────────────────────
+            doc.setFillColor(...gold);
+            doc.rect(10, y - 3, W - 20, 0.7, 'F');
+
+            // ── Logs section badge ────────────────────────────────────────
+            doc.setFillColor(...forest);
+            doc.roundedRect(10, y, 56, 7, 1.5, 1.5, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(255, 255, 255);
+            doc.text('IMMUNIZATION LOGS', 14, y + 4.8);
+            y += 11;
+
+            // ── Logs table ────────────────────────────────────────────────
+            if (currentLogs.length === 0) {
+                doc.setFont('times', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(150, 150, 150);
+                doc.text('No immunization records found.', W / 2, y + 5, { align: 'center' });
+            } else {
+                const sortOrder = document.getElementById('sortOrder').value;
+                const sorted = [...currentLogs].sort((a, b) => {
+                    const da = new Date(a.datetime || a.date);
+                    const db = new Date(b.datetime || b.date);
+                    return sortOrder === 'desc' ? db - da : da - db;
+                });
+
+                const tableRows = sorted.map(log => {
+                    const { date: d, time: t } = formatLogDate(log.datetime || log.date);
+                    return [ { date: d, time: t }, log.Height ? log.Height + ' cm' : '\u2013', log.Weight ? log.Weight + ' kg' : '\u2013' ];
+                });
+
+                doc.autoTable({
+                    startY: y,
+                    // FIX: pass empty string for col 0 — actual content drawn manually in didDrawCell
+                    head: [['Date & Time', 'Height', 'Weight']],
+                    body: tableRows.map(r => ['', r[1], r[2]]),
+                    margin: { left: 10, right: 10, bottom: 20 },
+                    headStyles: {
+                        fillColor: forest,
+                        textColor: [229, 186, 115],
+                        fontSize: 8,
+                        fontStyle: 'bold',
+                        halign: 'left',
+                        cellPadding: { top: 3.5, bottom: 3.5, left: 4, right: 2 },
+                        font: 'helvetica',
+                    },
+                    columnStyles: {
+                        0: { halign: 'left', cellWidth: 'auto' },
+                        1: { halign: 'left', cellWidth: 28 },
+                        2: { halign: 'left', cellWidth: 28, fontStyle: 'bold' },
+                    },
+                    alternateRowStyles: { fillColor: [240, 253, 244] },
+                    styles: {
+                        fontSize: 9,
+                        cellPadding: { top: 4, bottom: 4, left: 4, right: 2 },
+                        textColor: darkText,
+                        lineColor: [220, 210, 190],
+                        lineWidth: 0.2,
+                        font: 'times',
+                    },
+                    didDrawCell: (data) => {
+                        // Draw bold date + light time manually — avoids any duplication
+                        if (data.section === 'body' && data.column.index === 0) {
+                            const orig = tableRows[data.row.index];
+                            if (!orig) return;
+                            const { date: d, time: t } = orig[0];
+                            const cx = data.cell.x + 4;
+                            const cy = data.cell.y + data.cell.height / 2 + 1.2;
+                            // Bold date
+                            doc.setFont('times', 'bold');
+                            doc.setFontSize(9);
+                            doc.setTextColor(...darkText);
+                            doc.text(d, cx, cy);
+                            // Light time
+                            if (t) {
+                                const dw = doc.getTextWidth(d);
+                                doc.setFont('helvetica', 'normal');
+                                doc.setFontSize(7);
+                                doc.setTextColor(150, 150, 150);
+                                doc.text(t, cx + dw + 2.5, cy);
+                            }
+                        }
+                        // Colour weight cells in terracotta
+                        if (data.section === 'body' && data.column.index === 2) {
+                            const orig = tableRows[data.row.index];
+                            if (!orig) return;
+                            const cx = data.cell.x + 4;
+                            const cy = data.cell.y + data.cell.height / 2 + 1.2;
+                            doc.setFont('times', 'bold');
+                            doc.setFontSize(9);
+                            doc.setTextColor(...terracotta);
+                            doc.text(orig[2], cx, cy);
+                        }
+                    },
+                    didDrawPage: (data) => {
+                        if (data.pageNumber > 1) drawPageChrome();
+                    }
+                });
+            }
+
+            // ── Save ──────────────────────────────────────────────────────
+            const childName = document.getElementById('lblChildName').innerText.replace(/[^a-z0-9]/gi, '_');
+            doc.save('Swarnamrutha_Report_' + childName + '.pdf');
+        }
+
     </script>
-</body>
-</html>
